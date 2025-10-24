@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block header %}
+   <h1>{% block title %}Family Settings {%if g.user['fam_id']%}- {{g.user['fam_id']}}{%endif%}{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+{% if g.user['fam_id'] %}
+   <form method="post">
+      <h2>Name Gender</h2>
+      <input type="checkbox" id="pref_male" name="pref_male" value="{{g.family['male']}}" {%if g.family['male'] == "on" %} checked="true" {%endif%}>
+      <label for="pref_male">Male</label>
+
+      <input type="checkbox" id="pref_female" name="pref_female" value="{{g.family['female']}}" {%if g.family['female'] == "on" %} checked="true" {%endif%}>
+      <label for="pref_female">Female</label>
+
+      <input type="checkbox" id="pref_unisex" name="pref_unisex" value="{{g.family['unisex']}}" {%if g.family['unisex'] == "on" %} checked="true" {%endif%}>
+      <label for="pref_unisex">Unisex</label><br>
+
+      <input type="submit" value="Save Preferences">
+   </form>  
+{%else%}
+   <button><a href="{{ url_for('auth.join_family')}}">Join Family</a></button>
+   <button><a href="{{ url_for('auth.register_family')}}">Create Family</a></button>
+   
+{% endif %}
+{% endblock %}

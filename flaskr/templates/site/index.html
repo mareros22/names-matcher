@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{%macro name_card(n, sex, meaning, origin) -%}
+   <div class="name_card" style="{%if sex == "M"%}background-color:blue;"{%elif sex == "F"%} background-color:pink" {%else%}background-color:yellow"{%endif%}>
+      <h2 class="card_contents">{{n}}</h2><br>
+      {%if meaning%}
+      <p class="card_contents">{{origin}}</p><br>
+      <p class="card_contents">{{meaning}}</p><br>
+      {%endif%}
+      <div class="card_contents card_buttons">
+      <button class="card_buttons"><a href="">✅</a></button>
+      <button class="card_buttons"><a href="">❌</a></button>
+      </div>
+   </div>
+{%- endmacro %}
+
+{% block content %}
+   {% if g.user %}
+      <h2>Welcome, {{g.user['username']}}!</h2>
+      <div id="main_content">
+         <div style="width: 60vw">
+            <h3>Discover Names!</h3>
+            {{name_card(name['name'], name['sex'], name['meaning'], name['origin'])}}
+         </div>
+         <div style="width:40vw">
+
+         </div>
+      </div>
+   {% endif %}
+   
+{% endblock %}
