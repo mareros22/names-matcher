@@ -1,27 +1,99 @@
 {% extends 'base.html' %}
 
 {% block header %}
-   <h1>{% block title %}Family Settings {%if g.user['fam_id']%}- {{g.user['fam_id']}}{%endif%}{% endblock %}</h1>
+   {% block title %}Family Settings {%if g.family['familyID']%}- {{g.family['familyID']}}{%endif%}{% endblock %}
 {% endblock %}
 
 {% block content %}
-{% if g.user['fam_id'] %}
+{% if g.family['familyID'] %}
+<div style="border-bottom: 1px solid black; margin-bottom:5hw;">
    <form method="post">
-      <h2>Name Gender</h2>
-      <input type="checkbox" id="pref_male" name="pref_male" value="{{g.family['male']}}" {%if g.family['male'] == "on" %} checked="true" {%endif%}>
-      <label for="pref_male">Male</label>
+   <h3>Name Gender</h3>
+   <input type="checkbox" id="pref_male" name="pref_male" value="{{g.family['male']}}" {%if g.family['male'] == "on" %} checked="true" {%endif%}>
+   <label for="pref_male">Male</label>
 
-      <input type="checkbox" id="pref_female" name="pref_female" value="{{g.family['female']}}" {%if g.family['female'] == "on" %} checked="true" {%endif%}>
-      <label for="pref_female">Female</label>
+   <input type="checkbox" id="pref_female" name="pref_female" value="{{g.family['female']}}" {%if g.family['female'] == "on" %} checked="true" {%endif%}>
+   <label for="pref_female">Female</label>
 
-      <input type="checkbox" id="pref_unisex" name="pref_unisex" value="{{g.family['unisex']}}" {%if g.family['unisex'] == "on" %} checked="true" {%endif%}>
-      <label for="pref_unisex">Unisex</label><br>
+   <input type="checkbox" id="pref_unisex" name="pref_unisex" value="{{g.family['unisex']}}" {%if g.family['unisex'] == "on" %} checked="true" {%endif%}>
+   <label for="pref_unisex">Unisex</label><br>
+   </br>
 
-      <input type="submit" value="Save Preferences">
-   </form>  
+   <h3>First Letter</h3>
+   <label for="first-letter">Use the dropdown to add a letter:</label>
+   <input list="letters" name="first-letter" id="first-letter" autocomplete="off">
+   <datalist id="letters">
+      <option class="letter-sel" value="A">
+      <option class="letter-sel" value="B">
+      <option class="letter-sel" value="C">
+      <option class="letter-sel" value="D">
+      <option class="letter-sel" value="E">
+      <option class="letter-sel" value="F">
+      <option class="letter-sel" value="G">
+      <option class="letter-sel" value="H">
+      <option class="letter-sel" value="I">
+      <option class="letter-sel" value="J">
+      <option class="letter-sel" value="K">
+      <option class="letter-sel" value="L">
+      <option class="letter-sel" value="M">
+      <option class="letter-sel" value="N">
+      <option class="letter-sel" value="O">
+      <option class="letter-sel" value="P">
+      <option class="letter-sel" value="Q">
+      <option class="letter-sel" value="R">
+      <option class="letter-sel" value="S">
+      <option class="letter-sel" value="T">
+      <option class="letter-sel" value="U">
+      <option class="letter-sel" value="V">
+      <option class="letter-sel" value="W">
+      <option class="letter-sel" value="X">
+      <option class="letter-sel" value="Y">
+      <option class="letter-sel" value="Z">          
+   </datalist>
+   </br>
+   <ul id="chosen-letters"></ul>
+   
+</br>
+   <input type="hidden" id="letters-to-sub">
+   <input type="submit" value="Save Preferences">
+   </form> 
+   
+</div> 
+<div style="padding-top:5hw; padding-bottom: 5hw; background-color:darkred; color:white" >
+   <h3 style="color:white;">The Danger Zone</h3>
+   <div style="text-align:center;width:100%;">
+      <form action="{{ url_for('auth.leave') }}" style="display:inline-block">
+         <input type="submit" value="Leave Family" style="background-color: crimson;color:white;">
+      </form>
+      <form action="{{ url_for('auth.delete') }}" style="display:inline-block">
+         <input type="submit" value="Delete Account" style="background-color: crimson;color:white;">
+      </form>
+      
+   </div>
+   <p style="color:white;">Deleting your account is permanent. If you delete your account, you will have to create a new one and re-join the family to continue browsing names. Your likes, preferences, and notes will not be restorable.</p>
+</div>
+
 {%else%}
-   <button><a href="{{ url_for('auth.join_family')}}">Join Family</a></button>
-   <button><a href="{{ url_for('auth.register_family')}}">Create Family</a></button>
+   You must join or create a family before adjusting name preference settings.
+
+   <div style="width:95vw; padding-top:2vw">
+         <table>
+            <tr>
+               <td>Joining somebody who's already on NameMatch?</td>
+               <td style="text-align:center"><button><a href="{{ url_for('auth.join_family')}}" style="text-decoration:none;">Join Family</a></button></td>
+            </tr>
+            <tr>
+               <td> First one to the NameMatch party?</td>
+               <td style="text-align:center"><button><a href="{{ url_for('auth.register_family')}}" style="text-decoration: none;">Create Family</a></button></td>
+            </tr>
+         </table>
+   </div>   
+   <div style="width:95vw; padding-top:2vw">
+      </br></br>
+      <h3>About Families</h3> 
+      A <b>family</b> is a pairing of two NameMatch users who hope to agree on a name. The members of a family will share a settings page, where they can specify their naming preferences. They will also share a vault, which contains the names they have both liked.
+   </div>
+
    
 {% endif %}
 {% endblock %}

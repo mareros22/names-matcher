@@ -1,15 +1,30 @@
 {% extends 'base.html' %}
 
-{% block header %}
-   <h1>{% block title %}Log In{% endblock %}</h1>
-{% endblock %}
-
 {% block content %}
+<div style="width:63%; height:50vw; display:inline-block; background-color: aliceblue; top:10%; position:absolute; left:7%">
+   <h2>
+      About NameMatch
+   </h2>
+   <p>
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer dictum tempor nibh vitae feugiat. Duis ac quam bibendum, mattis justo ac, porttitor est. Integer orci lacus, semper in pretium eget, condimentum ut leo. Cras maximus dapibus diam et tincidunt. Sed in sapien pellentesque, vulputate elit in, interdum ex. Mauris mi augue, laoreet eu eleifend dapibus, consectetur ut ipsum. Sed gravida sit amet leo sit amet fermentum. Quisque aliquet nisl et lorem sodales, ut ullamcorper ex scelerisque. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Ut consectetur tortor magna, vel lacinia velit efficitur sed. Proin fermentum tellus nec venenatis aliquam. Proin vestibulum consequat fermentum. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Etiam ipsum lacus, tristique vitae sem eu, ultricies tempor lorem. Vivamus lacinia orci hendrerit massa mollis vulputate.
+   </p>
+</div>
+<div style="width: 22%; height:50vw; display:inline-block; background-color:bisque; top:10%; position:absolute; left:73%">
+   <h2>Log in:</h2>
    <form method="post">
-      <label for="username">Username</label>
+      <label for="username">Username:</label>
+      </br>
       <input name="username" id="username" required>
-      <label for="password">Password</label>
+      </br>
+      <label for="password">Password:</label>
+      </br>
       <input type="password" name="password" id="password" required>
-      <input type="submit" value="Log In">
+      </br>
+      <!--<div style="width: 100%; text-align:center">-->
+      <input type="submit" style="width:170px; text-align:center" value="Log In">
+      <!--</div>-->
+      </br>
+      New to NameMatch? <a href="{{ url_for('auth.register') }}">Register for an Account</a>
    </form>
+</div>
 {% endblock %}

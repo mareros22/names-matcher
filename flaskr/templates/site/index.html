@@ -8,24 +8,22 @@
       <p class="card_contents">{{meaning}}</p><br>
       {%endif%}
       <div class="card_contents card_buttons">
-      <button class="card_buttons"><a href="">✅</a></button>
-      <button class="card_buttons"><a href="">❌</a></button>
+      <button class="card_buttons"><a href="{{ url_for('selections.like', name=n)}}" style="text-decoration:none">✅</a></button>
+      <button class="card_buttons"><a href="{{ url_for('selections.dislike', name=n)}}" style="text-decoration:none">❌</a></button>
       </div>
    </div>
 {%- endmacro %}
-
+{%block header%}
+Explore names
+{%endblock%}
 {% block content %}
    {% if g.user %}
-      <h2>Welcome, {{g.user['username']}}!</h2>
       <div id="main_content">
-         <div style="width: 60vw">
-            <h3>Discover Names!</h3>
+         <div style="width: 100hw;">
             {{name_card(name['name'], name['sex'], name['meaning'], name['origin'])}}
          </div>
-         <div style="width:40vw">
-
-         </div>
       </div>
+      
    {% endif %}
    
 {% endblock %}

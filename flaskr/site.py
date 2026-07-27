@@ -16,19 +16,19 @@ def index():
    if(g.user is None):
       return redirect(url_for('auth.login'))
    else:
-      if(g.user['fam_id'] is None):
+      if(g.family is None):
          return redirect(url_for('auth.account'))
       db = get_db()
       pref = db.execute(
-         'SELECT male, female, unisex FROM family WHERE fam_id = ?', (g.user['fam_id'],)
+         'SELECT male, female, unisex FROM preferences WHERE familyID = ?', (g.family['familyID'],)
       ).fetchone()
-      print(pref)
-      print(pref['male'], pref['female'], pref['unisex'])
+      # print(pref)
+      # print(pref['male'], pref['female'], pref['unisex'])
 
       preferences = []
       
       p = tuple(preferences)
-      command = "SELECT * FROM name WHERE sex IN ("
+      command = "SELECT * FROM names as N, sex as S WHERE N.name == S.name AND N.name NOT IN (SELECT name FROM likedNames WHERE username == \"" + g.user["username"] + "\") AND N.name NOT IN (SELECT name FROM dislikedNames WHERE username == \""+ g.user["username"]+"\") AND S.sex IN ("
       if pref['male'] == 'on':
          command = command + str("\'M\'")
       if pref['female'] == 'on':

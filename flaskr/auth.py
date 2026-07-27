@@ -24,9 +24,13 @@ def add_name():
    db = get_db()
    rj = request.json
    try:
-      db.execute("INSERT INTO name (name, sex, year, lands) VALUES (?, ?, ?, ?)",
-         (rj.get("name"), rj.get("sex"), rj.get("year"), rj.get("lands"),
+      db.execute("INSERT INTO names (name) VALUES (?)",
+         (rj.get("name"),
          ))
+      db.execute("INSERT INTO sex (name, sex) VALUES (?,?)", (rj.get("name"), rj.get("sex"),))
+      if not rj.get("lands") == None:
+         for l in rj.get("lands"):
+            db.execute("INSERT INTO origins (country, name) VALUES (?,?)", (l, rj.get("name"),))
    except db.IntegrityError:
       error -= f"Could not add {request.name}"
    db.commit()
@@ -47,7 +51,7 @@ def register():
       if error is None:
          try:
             db.execute(
-               "INSERT INTO user (username, password) VALUES (?, ?)",
+               "INSERT INTO users (username, password) VALUES (?, ?)",
                (username, generate_password_hash(password)),
             )
             db.commit()
@@ -74,14 +78,19 @@ def register_family():
          try:
                un = session['user_id']
                db.execute(
-                  "INSERT INTO family (fam_id, password, member1) VALUES (?, ?, ?)",
-                  (username, generate_password_hash(password), un),
+                  "INSERT INTO families (familyID, password) VALUES (?, ?)",
+                  (username, generate_password_hash(password)),
+               )
+               db.execute(
+                  "INSERT INTO familyMembers(familyID, username) VALUES (?,?)",
+                  (username, un)
+               )
+               db.execute(
+                  "INSERT INTO preferences(familyID) VALUES (?)", (username,)
                )
                session['family_code'] = username
-               
-               fam = db.execute(
-                  'UPDATE user SET fam_id = ? WHERE id = ?', (username, un)
-               )
+               session['family'] = username
+               g.family = username
                db.commit()
          except db.IntegrityError:
                error = f"Family {username} is already registered."
@@ -98,17 +107,24 @@ def login():
       db = get_db()
       error = None
       user = db.execute(
-         'SELECT * FROM user WHERE username = ?', (username,)
+         'SELECT * FROM users WHERE username = ?', (username,)
       ).fetchone()
 
       if user is None:
          error = 'Incorrect username.'
       elif not check_password_hash(user['password'], password):
          error = 'Incorrect password.'
-
+      print(user)
       if error is None:
          session.clear()
-         session['user_id'] = user['id']
+         session['user_id'] = user['username']
+         fam = db.execute("SELECT familyID from familyMembers WHERE username = ?", (user['username'],)).fetchone()
+         if not fam == None:
+            g.family = fam
+            session['family_code'] = g.family['familyID']
+            partner = db.execute("SELECT username FROM familyMembers WHERE familyID == ? AND NOT username == ?", (g.family['familyID'], user['username']))
+            if not partner == None:
+               g.partner = partner
          return redirect(url_for('index'))
 
       flash(error)
@@ -124,7 +140,7 @@ def join_family():
       db = get_db()
       error = None
       user = db.execute(
-         'SELECT * FROM family WHERE fam_id = ?', (username,)
+         'SELECT * FROM families WHERE familyId = ?', (username,)
       ).fetchone()
 
       if user is None:
@@ -133,20 +149,23 @@ def join_family():
          error = 'Incorrect password.'
 
       if error is None:
-      #   session.clear()
-         if user['member2'] == None:
-            session['family_code'] = user['fam_id']
+         members = db.execute('SELECT COUNT(*) AS c FROM familyMembers WHERE familyID = ?', (username,)).fetchone()
+         if members is not None and members['c'] < 2:
+            session['family_code'] = username
             un = session['user_id']
-            u = db.execute(
-               'UPDATE user SET fam_id = ? WHERE id = ?', (username, un)
-            )
+            print(username, " ", un)
             fam = db.execute(
-               'UPDATE family SET member2 = ? WHERE fam_id = ?', (un, username)
+               'INSERT INTO familyMembers(familyId, username) VALUES (?, ?)', (username, un)
             )
             db.commit()
             return redirect(url_for('auth.account'))
          else:
             error = 'Family already has 2 users'
+            m = db.execute('SELECT username FROM familyMembers WHERE familyID = ?', (username,)).fetchall()
+            for memb in m:
+               print(memb[0])
+
+            
 
       flash(error)
 
@@ -157,12 +176,20 @@ def join_family():
 @login_required
 def account():
    db = get_db()
+
+   if g.family is None:
+      session['family_code'] = None
+      return render_template('auth/account.html')
+
+   g.family = db.execute('SELECT * FROM preferences WHERE familyID = ?', (g.family['familyID'], )).fetchone()
+   g.partner = db.execute('SELECT username FROM familyMembers WHERE familyID == ? AND NOT username == ?', (g.family['familyID'], g.user['username'])).fetchone()
+   
    if request.method == 'POST':
       m = "on" if "pref_male" in request.form else "off"
       f = "on" if "pref_female" in request.form else "off"
       x = "on" if "pref_unisex" in request.form else "off"
       fam = db.execute(
-         'UPDATE family SET male = ?, female = ?, unisex = ? WHERE fam_id = ?', (m, f, x, g.family['fam_id'])
+         'UPDATE preferences SET male = ?, female = ?, unisex = ? WHERE familyID = ?', (m, f, x, g.family['familyID'])
       )
       db.commit()
       return redirect(url_for('auth.account'))
@@ -179,15 +206,13 @@ def load_logged_in_user():
       g.user = None
    else:
       g.user = db.execute(
-         'SELECT * FROM user WHERE id = ?', (user_id,)
+         'SELECT username FROM users WHERE username = ?', (user_id,)
       ).fetchone()
 
-      if g.user is not None and g.user['fam_id'] is not None:
-
+      if g.user is not None:
          g.family = db.execute(
-            'SELECT * FROM family WHERE fam_id = ?', (g.user['fam_id'],)
+            'SELECT familyID FROM familyMembers WHERE username = ?', (g.user['username'],)
          ).fetchone()
-         print(g.user['fam_id'])
       else:
          g.family = None
 
@@ -196,3 +221,17 @@ def logout():
    session.clear()
    return redirect(url_for('index'))
 
+@bp.route('/leave', methods=['GET', 'POST'])
+@login_required
+def leave():
+   db = get_db()
+   db.execute("DELETE FROM familyMembers WHERE username = ?", (g.user['username'],))
+   g.family = None
+   session['family'] = None
+   db.commit()
+   return redirect(url_for('auth.account'))
+
+@bp.route('/delete', methods=['GET', 'POST'])
+@login_required
+def delete():
+   return redirect(url_for('auth.account'))
