@@ -79,6 +79,18 @@ def note():
     db.commit()
     return redirect(url_for('selections.liked'))
 
+@login_required
+@bp.route('/vault_note', methods=['POST'])
+def vault_note():
+    db = get_db()
+    name = request.form['name_hidden']
+    note = request.form['note_textbox']
+    print('new note ', note, ' for ', name)
+    db.execute("DELETE FROM notes WHERE name == ? AND username == ?",(name, g.user['username']))
+    db.execute("INSERT INTO notes (name, username, note) VALUES (?,?,?)", (name, g.user['username'], note))
+    db.commit()
+    return redirect(url_for('selections.vault'))
+
 
 @login_required
 @bp.route('/vault', methods=['GET', 'POST'])

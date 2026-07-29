@@ -5,24 +5,32 @@
       <div style="text-align: right; padding-right: 5px">
          <button class="card_buttons"><a href="{{ url_for('selections.trash', name=n)}}" style="text-decoration:none">🗑️</a></button>
       </div>
-      <h2 class="card_contents vault-name-clickable" onclick="function(){expand({{n}});}">{{n}}</h2><br>
+      <button command="show-modal" commandfor="modal-{{n}}" style="border: 0px; background:none"><h2 class="card_contents">{{n}}</h2></button><br>
       {%if meaning%}
       <p class="card_contents">{{origin}}</p><br>
       <p class="card_contents">{{meaning}}</p><br>
       {%endif%}
-      <div class="card_contents card_buttons" id="vault_card_{{n}}" style="display: none">
+      <dialog id="modal-{{n}}" class="vault-modal" id="vault_card_{{n}}" closeby="any">
+      <div style="text-align: right; padding-right: 5px; margin-bottom: 0px; padding-bottom: 0px;">
+         <button commandfor="modal-{{n}}" command="close" style="background-color: red;">X</button>
+      </div>
+      <h2>{{n}}</h2>
+      {%if meaning%}
+      <p class="card_contents">{{origin}}</p><br>
+      <p class="card_contents">{{meaning}}</p><br>
+      {%endif%}
       {%if note2%}
         {{partner}}'s Notes: <br>
         <textarea style="width:80%; resize:none;">{{note2}}</textarea>
       {%endif%}
-      <form style="width:100%" id="name_note_vault_{{name}}" action="{{url_for('selections.note')}}" method="post">
+      <form style="width:100%" id="name_note_vault_{{name}}" action="{{url_for('selections.vault_note')}}" method="post">
         Your Notes:
          <textarea form="name_note_vault_{{name}}" maxlength=511 id="note_textbox" name="note_textbox" style="width:80%; resize:none;">{%if note == None%}Leave a note!{%else%}{{note}}{%endif%}</textarea>
          <input type="hidden" value="{{n}}" id="name_hidden" name="name_hidden">
          </br>
          <input type="submit" value="Save">
       </form>
-   </div>
+   </dialog>
    </div>
 {%- endmacro %}
 {%block header%}
